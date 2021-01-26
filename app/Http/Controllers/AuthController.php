@@ -15,20 +15,26 @@ class AuthController extends Controller
     }
 
     public function login(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6'
-        ]);
+        try {
+            //code...
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email',
+                'password' => 'required|string|min:6'
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            // return ['validater' => auth()->attempt($validator->validated())];
+            if (!$token = Auth::attempt($validator->validated())) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            return $this->createNewToken($token);
+        } catch (\Exception $error) {
+            return $error;
         }
-
-        if (!$token = Auth::attempt($validator->validated())) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        return $this->createNewToken($token);
     }
 
     public function register(Request $request) {
